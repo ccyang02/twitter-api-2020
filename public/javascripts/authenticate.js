@@ -1,4 +1,4 @@
-const DOMAIN = ' http://localhost:3000/' // https://merry-simple-twitter.herokuapp.com/
+const DOMAIN = 'https://merry-simple-twitter.herokuapp.com/' // http://localhost:3000/
 const Toast = Swal.mixin({
   toast: true,
   position: 'top-end',

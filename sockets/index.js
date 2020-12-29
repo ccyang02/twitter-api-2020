@@ -124,9 +124,6 @@ module.exports = async (io) => {
     }
 
     console.info('[STATUS] There are %s people online.', io.of("/").sockets.size)
-    console.log('current sockets clients:')
-    io.of('/').sockets.forEach((value, key) => console.log(key))
-    console.log()
     // console.log(io.of("/").in('public room').allSockets())
     // console.log('>>>>', io.sockets.adapter)
 
@@ -153,11 +150,6 @@ module.exports = async (io) => {
     socket.on('disconnect', async () => {
       delete onlineUsers[id]
       getConnectedUsers(io, onlineUsers)
-      console.log(`socket ${socket.id} disconnected`)
-      console.info('[STATUS] There are %s people online.', io.of("/").sockets.size)
-      console.log('current sockets clients:')
-      io.of('/').sockets.forEach((value, key) => console.log(key))
-      console.log()
     })
   })
 }
