@@ -44,7 +44,12 @@ app.use(function (err, req, res, next) {
 })
 
 const http = require('http').createServer(app)
-const io = require('socket.io')(http)
+const io = require('socket.io')(http, {
+  cors: {
+    origin: 'http://localhost:8080',
+    methods: ["GET", "POST"],
+  }
+})
 require('./sockets')(io)
 
 http.listen(port, () => console.log(`Example app listening on port ${port}!`))
