@@ -5,7 +5,7 @@ module.exports = {
     try {
       const channels = [
         { id: 1, UserOne: 2, UserTwo: 3, createdAt: new Date(), updatedAt: new Date() },
-        { id: 1, UserOne: 2, UserTwo: 4, createdAt: new Date(), updatedAt: new Date() }
+        { id: 2, UserOne: 2, UserTwo: 4, createdAt: new Date(), updatedAt: new Date() }
       ]
       await queryInterface.bulkInsert('Channels', channels)
     } catch (error) {
