@@ -17,8 +17,8 @@ module.exports = async (io) => {
     const token = socket.handshake.auth.token
     console.log(`a user connected: ${token}`)
 
-    io.on('test-message', (username) => {
-      console.log('>>>>>>>> This is username from frontend.')
+    socket.on('test-message', (username) => {
+      console.log(`>>>>>>>> This is username from frontend. ${username}`)
     })
   })
 }
