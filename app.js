@@ -48,9 +48,10 @@ const io = require('socket.io')(http, {
   cors: {
     origin: ['https://sean-yu-pohsiang.github.io/simple-twitter-frontend-2020', 'http://localhost:8080'],
     methods: ["GET", "POST"],
+    credentials: true
   }
 })
-require('./sockets')(io)
+require('./socketServer')(io)
 
 http.listen(port, () => console.log(`Example app listening on port ${port}!`))
 
