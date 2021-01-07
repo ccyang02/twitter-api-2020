@@ -20,7 +20,7 @@ module.exports = async (io) => {
     console.log('This is fake request!', fakeReq)
     console.log(socket)
     console.log('==============================')
-
+    let auser;
     try {
       await passport.authenticate('jwt', { session: false }, (error, user, info) => {
         // if (error) return next(error)
@@ -31,7 +31,7 @@ module.exports = async (io) => {
         }
         if (user) console.log('======= I got u!!', user)
         socket.user = user
-        user = user
+        auser = user
       })(fakeReq, {})
     } catch (error) {
       console.log(`>>>> passport error: `, error)
