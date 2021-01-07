@@ -5,7 +5,7 @@ function promisedVerifyToken(fakeReq) {
   return new Promise((resolve, reject) => {
     passport.authenticate('jwt', { session: false }, (error, user, info) => {
       if (error) reject({ status: 'error', message: `Passport internal error: ${error}` })
-      if (!user) reject({ status: 'fail', message: 'Authentication fail.' })
+      if (!user) resolve({ status: 'fail', message: 'Authentication fail.' })
       if (user) resolve({ status: 'success', message: user })
     })(fakeReq, {})
   })
@@ -21,7 +21,6 @@ module.exports = async (io) => {
     let authUser;
     try {
       authUser = await promisedVerifyToken(fakeReq)
-      console.log('>>> ', authUser)
     } catch (error) {
       console.log(error)
     }
