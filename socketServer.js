@@ -36,6 +36,7 @@ module.exports = async (io) => {
     } catch (error) {
       console.log(`>>>> passport error: `, error)
     }
+    console.log('123: ', auser)
     console.log(`Wanna get user!! ${socket.user}`)
 
     const token = socket.handshake.auth.token
