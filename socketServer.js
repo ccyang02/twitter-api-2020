@@ -25,8 +25,7 @@ module.exports = async (io) => {
       console.log(error)
     }
 
-    console.log('>>> ', authUser)
-    if (authUser.status === 'success') {
+    if (authUser && authUser.status === 'success') {
       socket.user = authUser.message
     } else {
       socket.emit('unauthorized', `unauthorized: ${authUser.message}`)
