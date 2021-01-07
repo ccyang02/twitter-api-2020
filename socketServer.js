@@ -26,7 +26,7 @@ module.exports = async (io) => {
       if (user) console.log('======= I got u!!', user)
       socket.request.user = user
     })(fakeReq, {})
-
+    console.log(`Wanna get user!! ${socket.request}`)
 
     const token = socket.handshake.auth.token
     console.log(`Get socket ${socket.id}`)
