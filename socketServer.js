@@ -19,14 +19,21 @@ module.exports = async (io) => {
     console.log('This is fake request!', fakeReq)
     console.log(socket)
     console.log('==============================')
-    passport.authenticate('jwt', { session: false }, (error, user, info) => {
-      // if (error) return next(error)
-      if (error) console.log('======> Error!!!!', error)
-      if (!user) socket.disconnect(true)
-      if (user) console.log('======= I got u!!', user)
-      socket.request.user = user
-    })(fakeReq, {})
-    console.log(`Wanna get user!! ${socket.request}`)
+    try {
+      passport.authenticate('jwt', { session: false }, (error, user, info) => {
+        // if (error) return next(error)
+        if (error) console.log('======> Error!!!!', error)
+        if (!user) {
+          console.log('Disconnect this socket: ', socket.id)
+          socket.disconnect(true)
+        }
+        if (user) console.log('======= I got u!!', user)
+        socket.user = user
+      })(fakeReq, {})
+    } catch (error) {
+      console.log(`>>>> passport error: `, error)
+    }
+    console.log(`Wanna get user!! ${socket.user}`)
 
     const token = socket.handshake.auth.token
     console.log(`Get socket ${socket.id}`)
