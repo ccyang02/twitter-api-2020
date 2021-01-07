@@ -14,8 +14,7 @@ const db = require('./models')
 module.exports = async (io) => {
   // io.use(authenticated)
   io.on('connection', async (socket) => {
-    // const fakeReq = { headers: { Authorization: `Bearer ${socket.handshake.auth.token}` }, url: 'http://github.com' }
-    const fakeReq = { token: socket.handshake.auth.token }
+    const fakeReq = { headers: { authorization: `Bearer ${socket.handshake.auth.token}` }, url: 'https://sean-yu-pohsiang.github.io/simple-twitter-frontend-2020' }
 
     console.log('This is fake request!', fakeReq)
     console.log(socket)

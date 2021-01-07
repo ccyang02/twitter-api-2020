@@ -13,6 +13,7 @@ const jwtOptions = {
 }
 const strategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
   try {
+    console.log('====== jwt_payload =====> ', jwt_payload)
     let user = await User.findByPk(jwt_payload.id)
     if (!user) return next(null, false)
     if (user.dataValues.role !== 'admin') {
