@@ -13,14 +13,16 @@ const db = require('./models')
 
 module.exports = async (io) => {
   // io.use(authenticated)
+
   io.on('connection', async (socket) => {
     const fakeReq = { headers: { authorization: `Bearer ${socket.handshake.auth.token}` }, url: 'https://sean-yu-pohsiang.github.io/simple-twitter-frontend-2020' }
 
     console.log('This is fake request!', fakeReq)
     console.log(socket)
     console.log('==============================')
+
     try {
-      passport.authenticate('jwt', { session: false }, (error, user, info) => {
+      await passport.authenticate('jwt', { session: false }, (error, user, info) => {
         // if (error) return next(error)
         if (error) console.log('======> Error!!!!', error)
         if (!user) {
@@ -29,6 +31,7 @@ module.exports = async (io) => {
         }
         if (user) console.log('======= I got u!!', user)
         socket.user = user
+        user = user
       })(fakeReq, {})
     } catch (error) {
       console.log(`>>>> passport error: `, error)
