@@ -34,8 +34,8 @@ module.exports = async (io) => {
       socket.disconnect(true)
     }
 
-    console.log(`Get socket ${socket.user}`)
-    console.log(`a user connected: ${token}`)
+    console.log(`Get socket ${socket.user.name}`)
+    console.log(`a user connected: ${socket.handshake.auth.token}`)
 
     socket.on('test-message', (username) => {
       console.log(`>>> This is username from frontend. ${username}`)
