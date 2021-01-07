@@ -14,7 +14,7 @@ const db = require('./models')
 module.exports = async (io) => {
   // io.use(authenticated)
   io.on('connection', async (socket) => {
-    const fakeReq = { query: { token: socket.handshake.auth.token } }
+    const fakeReq = { headers: { Authorization: `Bearer ${socket.handshake.auth.token}` } }
 
     console.log('This is fake request!', fakeReq)
     console.log(socket)
