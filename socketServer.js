@@ -13,6 +13,7 @@ function promisedVerifyToken(fakeReq) {
 
 module.exports = async (io) => {
   io.on('connection', async (socket) => {
+    // console.log(`a user connected: ${socket.handshake.auth.token}`)
     const fakeReq = {
       headers: { authorization: `Bearer ${socket.handshake.auth.token}` },
       url: 'https://sean-yu-pohsiang.github.io/simple-twitter-frontend-2020'
@@ -27,13 +28,11 @@ module.exports = async (io) => {
 
     if (authUser && authUser.status === 'success') {
       socket.user = authUser.message
-      console.log(`Get socket ${socket.user.name}`) // id name account avatar
+      // console.log(`Get socket ${socket.user.name}`) // id name account avatar
     } else {
       socket.emit('unauthorized', `unauthorized: ${authUser.message}`)
       socket.disconnect(true)
     }
-
-    console.log(`a user connected: ${socket.handshake.auth.token}`)
 
     socket.on('test-message', (username) => {
       console.log(`>>> This is username from frontend. ${username}`)
