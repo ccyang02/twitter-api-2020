@@ -21,18 +21,19 @@ module.exports = async (io) => {
     let authUser;
     try {
       authUser = await promisedVerifyToken(fakeReq)
+      console.log('>>> ', authUser)
     } catch (error) {
       console.log(error)
     }
 
     if (authUser && authUser.status === 'success') {
       socket.user = authUser.message
+      console.log(`Get socket ${socket.user.name}`) // id name account avatar
     } else {
       socket.emit('unauthorized', `unauthorized: ${authUser.message}`)
       socket.disconnect(true)
     }
 
-    console.log(`Get socket ${socket.user.name}`) // id name account avatar
     console.log(`a user connected: ${socket.handshake.auth.token}`)
 
     socket.on('test-message', (username) => {
