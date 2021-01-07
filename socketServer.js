@@ -14,6 +14,20 @@ const db = require('./models')
 module.exports = async (io) => {
   // io.use(authenticated)
   io.on('connection', async (socket) => {
+    const fakeReq = { query: { token: socket.handshake.auth.token } }
+
+    console.log('This is fake request!', fakeReq)
+    console.log(socket)
+    console.log('==============================')
+    passport.authenticate('jwt', { session: false }, (error, user, info) => {
+      // if (error) return next(error)
+      if (error) console.log('======> Error!!!!', error)
+      if (!user) socket.disconnect(true)
+      if (user) console.log('======= I got u!!', user)
+      socket.request.user = user
+    })(fakeReq, {})
+
+
     const token = socket.handshake.auth.token
     console.log(`Get socket ${socket.id}`)
     console.log(`a user connected: ${token}`)
