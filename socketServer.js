@@ -52,8 +52,9 @@ module.exports = async (io) => {
     // console.log('123: ', auser)
     // console.log(`Wanna get user!! ${socket.user}`)
 
+    let getsomeuser;
     try {
-      const getsomeuser = await promisedPassportAuthentication(fakeReq)
+      getsomeuser = await promisedPassportAuthentication(fakeReq)
     } catch (error) {
       console.log('Bad things happen :(', error)
     }
