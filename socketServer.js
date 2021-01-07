@@ -11,6 +11,19 @@ const db = require('./models')
 //   })(socket.request, {}, next)
 // }
 
+function promisedPassportAuthentication(fakeReq) {
+  return new Promise((resolve, reject) => {
+    passport.authenticate('jwt', { session: false }, (error, user, info) => {
+      if (!user) {
+        reject('you are not the guy!')
+      }
+      if (user) {
+        resolve(user)
+      }
+    })(fakeReq, {})
+  })
+}
+
 module.exports = async (io) => {
   // io.use(authenticated)
 
@@ -20,28 +33,36 @@ module.exports = async (io) => {
     console.log('This is fake request!', fakeReq)
     console.log(socket)
     console.log('==============================')
-    let auser;
-    try {
-      await passport.authenticate('jwt', { session: false }, (error, user, info) => {
-        // if (error) return next(error)
-        if (error) console.log('======> Error!!!!', error)
-        if (!user) {
-          console.log('Disconnect this socket: ', socket.id)
-          socket.disconnect(true)
-        }
-        if (user) console.log('======= I got u!!', user)
-        socket.user = user
-        auser = user
-      })(fakeReq, {})
-    } catch (error) {
-      console.log(`>>>> passport error: `, error)
-    }
-    console.log('123: ', auser)
-    console.log(`Wanna get user!! ${socket.user}`)
+    // let auser;
+    // try {
+    //   await passport.authenticate('jwt', { session: false }, (error, user, info) => {
+    //     // if (error) return next(error)
+    //     if (error) console.log('======> Error!!!!', error)
+    //     if (!user) {
+    //       console.log('Disconnect this socket: ', socket.id)
+    //       socket.disconnect(true)
+    //     }
+    //     if (user) console.log('======= I got u!!', user)
+    //     socket.user = user
+    //     auser = user
+    //   })(fakeReq, {})
+    // } catch (error) {
+    //   console.log(`>>>> passport error: `, error)
+    // }
+    // console.log('123: ', auser)
+    // console.log(`Wanna get user!! ${socket.user}`)
 
-    const token = socket.handshake.auth.token
-    console.log(`Get socket ${socket.id}`)
-    console.log(`a user connected: ${token}`)
+    try {
+      const getsomeuser = await promisedPassportAuthentication(fakeReq)
+    } catch (error) {
+      console.log('Bad things happen :(', error)
+    }
+    console.log('Get promise!!!!!', getsomeuser)
+
+
+    // const token = socket.handshake.auth.token
+    // console.log(`Get socket ${socket.id}`)
+    // console.log(`a user connected: ${token}`)
 
     socket.on('test-message', (username) => {
       console.log(`>>>>>>>> This is username from frontend. ${username}`)
