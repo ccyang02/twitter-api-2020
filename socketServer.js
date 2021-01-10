@@ -3,6 +3,7 @@ const db = require('./models')
 const { getConnectedUsers } = require('./controllers/socket/public.js')
 const onlineUsers = {}
 
+
 function promisedVerifyToken(fakeReq) {
   return new Promise((resolve, reject) => {
     passport.authenticate('jwt', { session: false }, (error, user, info) => {
@@ -12,6 +13,8 @@ function promisedVerifyToken(fakeReq) {
     })(fakeReq, {})
   })
 }
+
+
 
 module.exports = async (io) => {
   io.on('connection', async (socket) => {
@@ -42,8 +45,10 @@ module.exports = async (io) => {
     //Update onlineUsers
     if (!onlineUsers[id]) {
       onlineUsers[id] = []
+      io.emit('online', ...user)
     }
     onlineUsers[id].push(socket.id)
+
     socket.on('test-message', (username) => {
       console.log(`>>>>>>>> This is username from frontend. ${username}`)
     })
@@ -52,8 +57,14 @@ module.exports = async (io) => {
       console.log(`${new Date(time).toISOString()}: A user open public room (userId: ${id} name: ${name})`)
       getConnectedUsers(io, onlineUsers)
     })
+
     socket.on('disconnect', async () => {
-      console.log('Get disconnected user.')
+      console.log('Get disconnected socket.')
+      onlineUser[id].splice(online.User[id].indexOf(socket.id), 1)
+      if (!onlineUser[id].length) {
+        io.emit('offline', id)
+        console.log(`A user disconnected (userId: ${id} name: ${name})`)
+      }
     })
   })
 }
