@@ -1,4 +1,5 @@
-const { User } = require('../../models')
+const { User, Sequelize } = require('../../models')
+const { Op } = Sequelize
 const userSelectedFields = ['id', 'account', 'name', 'avatar']
 
 async function getConnectedUsers(io, onlineUsers) {
