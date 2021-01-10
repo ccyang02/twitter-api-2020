@@ -67,6 +67,6 @@ router.get('/tweets/:id', authenticated, userAuthenticated, tweetController.getT
 router.post('/tweets', authenticated, userAuthenticated, postTweetRules, tweetController.postTweet)
 router.get('/tweets', authenticated, userAuthenticated, tweetController.getTweets)
 
-router.get('/public/messages', authenticated, chatController.getPublicMsg)
+router.get('/chat/messages', authenticated, userAuthenticated, chatController.getMessages)
 
 module.exports = router
