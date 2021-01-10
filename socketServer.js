@@ -45,7 +45,7 @@ module.exports = async (io) => {
         console.log('Get disconnected socket.')
         onlineUsers[id].splice(onlineUsers[id].indexOf(socket.id), 1)
         if (!onlineUsers[id].length) {
-          io.emit('offline', id)
+          io.emit('offline', { id, name })
           console.log(`A user disconnected (userId: ${id} name: ${name})`)
         }
       })
