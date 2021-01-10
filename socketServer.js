@@ -1,5 +1,7 @@
 const passport = require('./config/passport')
 const db = require('./models')
+const { getConnectedUsers } = require('./controllers/socket/public.js')
+const onlineUsers = {}
 
 function promisedVerifyToken(fakeReq) {
   return new Promise((resolve, reject) => {
@@ -34,10 +36,22 @@ module.exports = async (io) => {
       throw Error(error)
     }
 
+    const { id, account, name, avatar } = socket.request.user
+    const user = { id, account, name, avatar }
+
+    //Update onlineUsers
+    if (!onlineUsers[id]) {
+      onlineUsers[id] = []
+    }
+    onlineUsers[id].push(socket.id)
     socket.on('test-message', (username) => {
       console.log(`>>>>>>>> This is username from frontend. ${username}`)
     })
 
+    socket.on('init-public', (time) => {
+      console.log(`${new Date(time).toISOString()}: A user open public room (userId: ${id} name: ${name})`)
+      getConnectedUsers(io, onlineUsers)
+    })
     socket.on('disconnect', async () => {
       console.log('Get disconnected user.')
     })
