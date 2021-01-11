@@ -1,45 +1,57 @@
 const passport = require('./config/passport')
 const db = require('./models')
+const { getConnectedUsers } = require('./controllers/socket/public.js')
+const onlineUsers = {}
 
-function promisedVerifyToken(fakeReq) {
-  return new Promise((resolve, reject) => {
-    passport.authenticate('jwt', { session: false }, (error, user, info) => {
-      if (error) reject({ status: 'error', message: `Passport internal error: ${error}` })
-      if (!user) resolve({ status: 'fail', message: 'Authentication fail.' })
-      if (user) resolve({ status: 'success', message: user })
-    })(fakeReq, {})
-  })
+function authenticated(socket, next) {
+  const fakeReq = {
+    headers: { authorization: `Bearer ${socket.handshake.auth.token}` },
+    url: 'https://sean-yu-pohsiang.github.io/simple-twitter-frontend-2020'
+  }
+  passport.authenticate('jwt', { session: false }, (error, user, info) => {
+    if (error) return next(new Error(`Passport internal error: ${error}`))
+    if (!user) return next(new Error('Authentication fail.'))
+    if (user.role === 'admin') return next(new Error('Authentication fail.'))
+    const { id, account, name, avatar } = user
+    socket.user = { id, account, name, avatar }
+    return next()
+  })(fakeReq, {}, next)
 }
 
-module.exports = async (io) => {
-  io.on('connection', async (socket) => {
-    // console.log(`a user connected: ${socket.handshake.auth.token}`)
-    const fakeReq = {
-      headers: { authorization: `Bearer ${socket.handshake.auth.token}` },
-      url: 'https://sean-yu-pohsiang.github.io/simple-twitter-frontend-2020'
-    }
 
-    let authUser;
+module.exports = async (io) => {
+  io.use(authenticated)
+  io.on('connection', async (socket) => {
     try {
-      authUser = await promisedVerifyToken(fakeReq)
+      const { id, account, name, avatar } = socket.user
+
+      //Update onlineUsers
+      if (!onlineUsers[id]) {
+        onlineUsers[id] = []
+        io.emit('online', socket.user)
+      }
+      onlineUsers[id].push(socket.id)
+
+      socket.on('test-message', (username) => {
+        console.log(`>>>>>>>> This is username from frontend. ${username}`)
+      })
+
+      socket.on('init-public', (time) => {
+        console.log(`${new Date(time).toISOString()}: A user open public room (userId: ${id} name: ${name})`)
+        getConnectedUsers(io, onlineUsers)
+      })
+
+      socket.on('disconnect', () => {
+        console.log('Get disconnected socket.')
+        onlineUsers[id].splice(onlineUsers[id].indexOf(socket.id), 1)
+        if (!onlineUsers[id].length) {
+          io.emit('offline', { id, name })
+          console.log(`A user disconnected (userId: ${id} name: ${name})`)
+        }
+      })
     } catch (error) {
       console.log(error)
+      socket.emit('error', 'Internal error occurs, please try again later.')
     }
-
-    if (authUser && authUser.status === 'success') {
-      socket.user = authUser.message
-      // console.log(`Get socket ${socket.user.name}`) // id name account avatar
-    } else {
-      socket.emit('unauthorized', `unauthorized: ${authUser.message}`)
-      socket.disconnect(true)
-    }
-
-    socket.on('test-message', (username) => {
-      console.log(`>>> This is username from frontend. ${username}`)
-    })
-
-    socket.on('disconnect', async () => {
-      console.log(`===> Detect disconnect: ${socket.id}`)
-    })
   })
 }

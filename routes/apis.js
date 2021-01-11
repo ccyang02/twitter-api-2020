@@ -7,6 +7,7 @@ const userController = require('../controllers/api/userController')
 const adminController = require('../controllers/api/adminController')
 const followshipController = require('../controllers/api/followshipController')
 const tweetController = require('../controllers/api/tweetController')
+const chatController = require('../controllers/api/chatController')
 const { registerRules, loginRules, profileRules, postTweetRules, userRules, tweetRules } = require('../middleware/validator')
 const helpers = require('../_helpers.js')
 
@@ -65,5 +66,7 @@ router.post('/tweets/:id/unlike', authenticated, userAuthenticated, tweetControl
 router.get('/tweets/:id', authenticated, userAuthenticated, tweetController.getTweet)
 router.post('/tweets', authenticated, userAuthenticated, postTweetRules, tweetController.postTweet)
 router.get('/tweets', authenticated, userAuthenticated, tweetController.getTweets)
+
+router.post('/chat/messages', authenticated, userAuthenticated, chatController.getMessages)
 
 module.exports = router
