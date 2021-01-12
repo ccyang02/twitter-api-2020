@@ -24,7 +24,7 @@ module.exports = async (io) => {
   io.on('connection', async (socket) => {
     try {
       const { id, account, name, avatar } = socket.user
-
+      console.log(`Get connected socket (socketId: ${socket.id} name: ${name})`)
       //Update onlineUsers
       if (!onlineUsers[id]) {
         onlineUsers[id] = []
@@ -41,8 +41,13 @@ module.exports = async (io) => {
         getConnectedUsers(io, onlineUsers)
       })
 
+      socket.on('public-message', (msg) => {
+        console.log(typeof msg.time)
+        io.emit('public-message', { user: socket.user, ...msg })
+      })
+
       socket.on('disconnect', () => {
-        console.log('Get disconnected socket.')
+        console.log(`Get disconnected socket. (socketId: ${id} name: ${name})`)
         onlineUsers[id].splice(onlineUsers[id].indexOf(socket.id), 1)
         if (!onlineUsers[id].length) {
           io.emit('offline', { id, name })
