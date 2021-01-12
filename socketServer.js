@@ -28,8 +28,8 @@ module.exports = async (io) => {
       //Update onlineUsers
       if (!onlineUsers[id]) {
         onlineUsers[id] = []
-        io.emit('online', socket.user)
       }
+      if (!onlineUsers[id].length) io.emit('online', socket.user)
       onlineUsers[id].push(socket.id)
 
       socket.on('test-message', (username) => {
