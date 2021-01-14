@@ -10,7 +10,7 @@ const chatController = {
       const messages = await sequelize.query(`
         SELECT msg.id, msg.UserId, msg.ChannelId, msg.message, 
           users.name, users.account, users.avatar,
-          UNIX_TIMESTAMP(msg.createdAt) * 1000 AS createdAt
+          UNIX_TIMESTAMP(msg.createdAt) * 1000 AS time
         FROM Messages as msg
         RIGHT JOIN Users as users 
         ON users.id = msg.UserId

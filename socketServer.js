@@ -1,6 +1,5 @@
 const passport = require('./config/passport')
-const db = require('./models')
-const { Message } = db.Message
+const { Message } = require('./models')
 const { getConnectedUsers } = require('./controllers/socket/public.js')
 const onlineUsers = {}
 
@@ -42,19 +41,23 @@ module.exports = async (io) => {
         getConnectedUsers(io, onlineUsers)
       })
 
-      socket.on('public-message', async (message, time) => {
+      socket.on('public-message', async (packet) => {
+        const { message, time } = packet
         const { account, avatar, id, name } = socket.user
-        const msg = await Message.create({
-          ChanneId: 0,
-          UserId: id,
-          message: message
-        })
+        try {
+          const msg = await Message.create({
+            ChanneId: 0,
+            UserId: id,
+            message: message
+          })
 
-        msg.changed('createdAt', true)
-        msg.set('createdAt', new Date(parseInt(time)), { raw: true })
-        await msg.save({ silent: true })
-
-        io.emit('public-message', { account, avatar, id, name, message, time })
+          msg.changed('createdAt', true)
+          msg.set('createdAt', new Date(parseInt(time)), { raw: true })
+          await msg.save({ silent: true })
+        } catch (error) {
+          console.log('Error on public-message: ', error)
+        }
+        io.emit('public-message', { account, avatar, userId: id, name, message, time })
       })
 
       socket.on('disconnect', () => {
