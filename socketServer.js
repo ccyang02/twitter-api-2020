@@ -43,7 +43,8 @@ module.exports = async (io) => {
 
       socket.on('public-message', (msg) => {
         console.log(typeof msg.time)
-        io.emit('public-message', { user: socket.user, ...msg })
+        const { account, avatar, id, name } = socket.user
+        io.emit('public-message', { account, avatar, id, name, ...msg })
       })
 
       socket.on('disconnect', () => {
