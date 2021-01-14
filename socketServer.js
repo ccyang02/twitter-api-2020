@@ -43,17 +43,23 @@ module.exports = async (io) => {
       })
 
       socket.on('public-message', async (message, time) => {
+        console.log('>>> get message, time: ', message, time)
+        console.log(socket.user)
         const { account, avatar, id, name } = socket.user
-        const msg = await Message.create({
-          ChanneId: 0,
-          UserId: id,
-          message: message
-        })
+        console.log('>>>>> ', account, avatar, id, name)
+        try {
+          const msg = await Message.create({
+            ChanneId: 0,
+            UserId: id,
+            message: message
+          })
 
-        msg.changed('createdAt', true)
-        msg.set('createdAt', new Date(parseInt(time)), { raw: true })
-        await msg.save({ silent: true })
-
+          msg.changed('createdAt', true)
+          msg.set('createdAt', new Date(parseInt(time)), { raw: true })
+          await msg.save({ silent: true })
+        } catch (error) {
+          console.log('Error on public-message: ', error)
+        }
         io.emit('public-message', { account, avatar, id, name, message, time })
       })
 
