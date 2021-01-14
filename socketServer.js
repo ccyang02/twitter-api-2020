@@ -43,9 +43,7 @@ module.exports = async (io) => {
 
       socket.on('public-message', async (packet) => {
         const { message, time } = packet
-        console.log('>>> get message, time: ', message, time)
         const { account, avatar, id, name } = socket.user
-        console.log('>>>>> ', account, avatar, id, name)
         try {
           const msg = await Message.create({
             ChanneId: 0,
@@ -59,7 +57,7 @@ module.exports = async (io) => {
         } catch (error) {
           console.log('Error on public-message: ', error)
         }
-        io.emit('public-message', { account, avatar, id, name, message, time })
+        io.emit('public-message', { account, avatar, userId: id, name, message, time })
       })
 
       socket.on('disconnect', () => {
