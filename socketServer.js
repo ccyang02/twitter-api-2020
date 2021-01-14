@@ -50,6 +50,7 @@ module.exports = async (io) => {
         console.log(`Get disconnected socket. (socketId: ${id} name: ${name})`)
         onlineUsers[id].splice(onlineUsers[id].indexOf(socket.id), 1)
         if (!onlineUsers[id].length) {
+          delete onlineUsers[id]
           io.emit('offline', { id, name })
           console.log(`A user disconnected (userId: ${id} name: ${name})`)
         }
