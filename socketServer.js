@@ -46,7 +46,7 @@ module.exports = async (io) => {
         const { account, avatar, id, name } = socket.user
         try {
           const msg = await Message.create({
-            ChanneId: 0,
+            ChannelId: 0,
             UserId: id,
             message: message
           })
