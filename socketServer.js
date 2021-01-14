@@ -1,6 +1,5 @@
 const passport = require('./config/passport')
-const db = require('./models')
-const { Message } = db.Message
+const { Message } = require('./models')
 const { getConnectedUsers } = require('./controllers/socket/public.js')
 const onlineUsers = {}
 
@@ -42,9 +41,9 @@ module.exports = async (io) => {
         getConnectedUsers(io, onlineUsers)
       })
 
-      socket.on('public-message', async (message, time) => {
+      socket.on('public-message', async (packet) => {
+        const { message, time } = packet
         console.log('>>> get message, time: ', message, time)
-        console.log(socket.user)
         const { account, avatar, id, name } = socket.user
         console.log('>>>>> ', account, avatar, id, name)
         try {
