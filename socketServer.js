@@ -65,7 +65,8 @@ module.exports = async (io) => {
         onlineUsers[id].splice(onlineUsers[id].indexOf(socket.id), 1)
         if (!onlineUsers[id].length) {
           delete onlineUsers[id]
-          io.emit('offline', { id, name })
+          getConnectedUsers(io, onlineUsers)
+          io.emit('offline', { id, account })
           console.log(`A user disconnected (userId: ${id} account: ${account})`)
         }
       })
