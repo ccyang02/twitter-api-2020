@@ -4,6 +4,7 @@ const userSelectedFields = ['id', 'account', 'name', 'avatar']
 
 async function getConnectedUsers(io, onlineUsers) {
   try {
+    console.log('>>>>> onlineUsers: ', onlineUsers)
     const connectedUserIds = Object.keys(onlineUsers).map(Number)
     const connectedUsers = await User.findAll({
       where: { id: { [Op.in]: connectedUserIds } },
