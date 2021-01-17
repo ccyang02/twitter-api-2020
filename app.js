@@ -47,8 +47,7 @@ const http = require('http').createServer(app)
 const io = require('socket.io')(http, {
   cors: {
     origin: ['https://sean-yu-pohsiang.github.io/simple-twitter-frontend-2020', 'http://localhost:8080'],
-    methods: ["GET", "POST"],
-    credentials: true
+    methods: ["GET", "POST"]
   }
 })
 require('./socketServer')(io)
