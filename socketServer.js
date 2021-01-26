@@ -61,12 +61,13 @@ module.exports = async (io) => {
       })
 
       socket.on('disconnect', () => {
-        console.log(`Get disconnected socket. (socketId: ${id} name: ${name})`)
+        console.log(`Get disconnected socket. (socketId: ${socket.id} account: ${account})`)
         onlineUsers[id].splice(onlineUsers[id].indexOf(socket.id), 1)
         if (!onlineUsers[id].length) {
           delete onlineUsers[id]
+          getConnectedUsers(io, onlineUsers)
           io.emit('user-on-off-line', { status: 'off', id, name })
-          console.log(`A user disconnected (userId: ${id} name: ${name})`)
+          console.log(`A user disconnected (userId: ${id} account: ${account})`)
         }
       })
     } catch (error) {
