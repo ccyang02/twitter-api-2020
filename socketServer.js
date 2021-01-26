@@ -29,7 +29,7 @@ module.exports = async (io) => {
       if (!onlineUsers[id]) {
         onlineUsers[id] = []
       }
-      if (!onlineUsers[id].length) io.emit('online', socket.user)
+      if (!onlineUsers[id].length) io.emit('user-on-off-line', { status: 'on', id: socket.user.id, name: socket.user.name })
       onlineUsers[id].push(socket.id)
 
       socket.on('test-message', (username) => {
@@ -66,7 +66,7 @@ module.exports = async (io) => {
         if (!onlineUsers[id].length) {
           delete onlineUsers[id]
           getConnectedUsers(io, onlineUsers)
-          io.emit('offline', { id, account })
+          io.emit('user-on-off-line', { status: 'off', id, name })
           console.log(`A user disconnected (userId: ${id} account: ${account})`)
         }
       })
