@@ -48,7 +48,7 @@ const io = require('socket.io')(http, {
   cors: {
     origin: ['https://sean-yu-pohsiang.github.io', 'http://localhost:8080'],
     methods: ["GET", "POST"]
-  }
+  },
 })
 require('./socketServer')(io)
 

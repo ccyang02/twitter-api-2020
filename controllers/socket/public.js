@@ -12,8 +12,9 @@ async function getConnectedUsers(io, onlineUsers) {
     })
 
     connectedUsers.forEach((user, i) => {
-      user.sckId = onlineUsers[user.id].map(socket => socket.id)
+      user.sckId = onlineUsers[user.id]
     })
+
     await io.emit('init-public', connectedUsers)
   } catch (error) {
     console.log(error)
