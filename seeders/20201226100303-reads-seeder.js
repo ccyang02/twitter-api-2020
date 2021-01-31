@@ -23,6 +23,16 @@ module.exports = {
           UserId: 4,
           ChannelId: 2,
           date: new Date(2020, 10, 10, 10, 1, 0)
+        },
+        {
+          UserId: 2,
+          ChannelId: 0,
+          date: new Date(2020, 10, 10, 8, 0, 0)
+        },
+        {
+          UserId: 5,
+          ChannelId: 0,
+          date: new Date(2020, 10, 10, 9, 0, 0)
         }
       ]
       await queryInterface.bulkInsert('Reads', reads)
