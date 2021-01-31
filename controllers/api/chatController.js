@@ -1,7 +1,5 @@
-const db = require('../../models')
-const Message = db.Message
-const User = db.User
-const sequelize = db.sequelize
+const { User, Message, Read, Sequelize, sequelize } = require('../../models')
+const { Op } = Sequelize
 
 const chatController = {
   getMessages: async (req, res, next) => {
@@ -19,6 +17,19 @@ const chatController = {
       `, { type: sequelize.QueryTypes.SELECT, replacements: { channelId: channelId } })
 
       return res.json(messages)
+    } catch (error) {
+      next(error)
+    }
+  },
+  getPublicUnread: async (req, res, next) => {
+    try {
+      const { userId } = req.body
+      const read = await Read.findOne({ where: { 'UserId': userId, 'ChannelId': 0 } })
+
+      // if it cannot be found in Read, that means this user never open public chatroom
+      const lastTimestamp = read !== null ? read.date.getTime() : 0
+      const count = await Message.count({ where: { 'ChannelId': 0, 'createdAt': { [Op.gt]: lastTimestamp } } })
+      return res.json({ count })
     } catch (error) {
       next(error)
     }

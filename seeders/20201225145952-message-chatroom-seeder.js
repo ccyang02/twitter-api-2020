@@ -24,14 +24,14 @@ module.exports = {
         // public room
         {
           ChannelId: 0,
-          UserId: (users[Math.floor(Math.random() * users.length)]).id,
+          UserId: 2,
           message: 'Anyone online?',
           createdAt: new Date(2020, 10, 10, 8, 0, 0),
           updatedAt: new Date(2020, 10, 10, 8, 0, 0)
         },
         {
           ChannelId: 0,
-          UserId: (users[Math.floor(Math.random() * users.length)]).id,
+          UserId: 5,
           message: 'lalala',
           createdAt: new Date(2020, 10, 10, 9, 0, 0),
           updatedAt: new Date(2020, 10, 10, 9, 0, 0)
