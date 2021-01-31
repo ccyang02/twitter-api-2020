@@ -49,6 +49,19 @@ module.exports = async (io) => {
         getConnectedUsers(io, onlineUsers)
       })
 
+      socket.on('message-read-timestamp', async (packet) => {
+        const { channelId, time } = packet
+        const { id } = socket.user
+        try {
+          const { read, created } = await Read.findOrCreate({ where: { 'UserId': id, 'ChannelId': channelId } })
+          read.changed('createdAt', true)
+          read.set('createdAt', new Date(parseInt(time)), { raw: true })
+          await read.save({ silent: true })
+        } catch (error) {
+          console.log('Error on message-read-timestamp: ', error)
+        }
+      })
+
       socket.on('public-message', async (packet) => {
         const { message, time } = packet
         const { account, avatar, id, name } = socket.user
