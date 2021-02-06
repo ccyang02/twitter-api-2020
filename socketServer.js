@@ -54,21 +54,29 @@ module.exports = async (io) => {
         const { id } = socket.user
         console.log(packet)
         console.log(id, channelId, time)
-        try {
-          const output = await Read.findOrCreate({ where: { 'UserId': id, 'ChannelId': channelId } })
-          read = output[0]
-          created = output[1]
-          console.log('========================')
-          console.log(created)
-          console.log(read)
-          console.log('========================')
 
-          read.changed('createdAt', true)
-          read.set('createdAt', new Date(parseInt(time)), { raw: true })
-          await read.save({ silent: true })
+        try {
+          const output = await Read.update({ 'date': new Date(parseInt(time)) }, { where: { 'UserId': id, 'ChannelId': channelId } })
+          console.log(output)
         } catch (error) {
-          console.log('Error on message-read-timestamp: ', error)
+          console.log('His record is not created at db.')
         }
+
+        // try {
+        //   const output = await Read.findOrCreate({ where: { 'UserId': id, 'ChannelId': channelId } })
+        //   read = output[0]
+        //   created = output[1]
+        //   console.log('========================')
+        //   console.log(created)
+        //   console.log(read)
+        //   console.log('========================')
+
+        //   read.changed('createdAt', true)
+        //   read.set('createdAt', new Date(parseInt(time)), { raw: true })
+        //   await read.save({ silent: true })
+        // } catch (error) {
+        //   console.log('Error on message-read-timestamp: ', error)
+        // }
       })
 
       socket.on('public-message', async (packet) => {
