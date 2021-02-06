@@ -1,5 +1,5 @@
 const passport = require('./config/passport')
-const { Message } = require('./models')
+const { Message, Read } = require('./models')
 const { getConnectedUsers } = require('./controllers/socket/public.js')
 const onlineUsers = {}
 
@@ -52,13 +52,11 @@ module.exports = async (io) => {
       socket.on('message-read-timestamp', async (packet) => {
         const { channelId, time } = packet
         const { id } = socket.user
-        try {
-          const { read, created } = await Read.findOrCreate({ where: { 'UserId': id, 'ChannelId': channelId } })
-          read.changed('createdAt', true)
-          read.set('createdAt', new Date(parseInt(time)), { raw: true })
-          await read.save({ silent: true })
-        } catch (error) {
-          console.log('Error on message-read-timestamp: ', error)
+
+        const output = await Read.update({ 'date': new Date(parseInt(time)) }, { where: { 'UserId': id, 'ChannelId': channelId } })
+        if (output[0] === 0) {
+          // if there is no record about this user
+          await Read.create({ 'UserId': id, 'ChannelId': channelId, 'date': new Date(parseInt(time)) })
         }
       })
 
