@@ -1,5 +1,5 @@
 const passport = require('./config/passport')
-const { Message } = require('./models')
+const { Message, Read } = require('./models')
 const { getConnectedUsers } = require('./controllers/socket/public.js')
 const onlineUsers = {}
 
