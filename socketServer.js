@@ -52,6 +52,8 @@ module.exports = async (io) => {
       socket.on('message-read-timestamp', async (packet) => {
         const { channelId, time } = packet
         const { id } = socket.user
+        console.log(packet)
+        console.log(id, channelId, time)
         try {
           const { read, created } = await Read.findOrCreate({ where: { 'UserId': id, 'ChannelId': channelId } })
           console.log('========================')
