@@ -54,6 +54,11 @@ module.exports = async (io) => {
         const { id } = socket.user
         try {
           const { read, created } = await Read.findOrCreate({ where: { 'UserId': id, 'ChannelId': channelId } })
+          console.log('========================')
+          console.log(created)
+          console.log(read)
+          console.log('========================')
+
           read.changed('createdAt', true)
           read.set('createdAt', new Date(parseInt(time)), { raw: true })
           await read.save({ silent: true })
