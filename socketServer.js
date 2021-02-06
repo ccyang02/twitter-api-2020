@@ -55,11 +55,9 @@ module.exports = async (io) => {
         console.log(packet)
         console.log(id, channelId, time)
 
-        try {
-          const output = await Read.update({ 'date': new Date(parseInt(time)) }, { where: { 'UserId': id, 'ChannelId': channelId } })
-          console.log(output)
-        } catch (error) {
-          console.log('His record is not created at db.')
+        const output = await Read.update({ 'date': new Date(parseInt(time)) }, { where: { 'UserId': id, 'ChannelId': channelId } })
+        if (output[0] === 0) {
+          await Read.create({ 'UserId': id, 'ChannelId': channelId, 'date': new Date(parseInt(time)) })
         }
 
         // try {
