@@ -56,10 +56,11 @@ module.exports = async (io) => {
         console.log(id, channelId, time)
         try {
           const output = await Read.findOrCreate({ where: { 'UserId': id, 'ChannelId': channelId } })
+          read = output[0]
+          created = output[1]
           console.log('========================')
-          console.log(output)
-          // console.log(created)
-          // console.log(read)
+          console.log(created)
+          console.log(read)
           console.log('========================')
 
           read.changed('createdAt', true)
