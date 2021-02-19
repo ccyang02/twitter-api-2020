@@ -69,5 +69,6 @@ router.get('/tweets', authenticated, userAuthenticated, tweetController.getTweet
 
 router.post('/chat/messages', authenticated, userAuthenticated, chatController.getMessages)
 router.post('/chat/public_unread', authenticated, userAuthenticated, chatController.getPublicUnread)
+router.get('/chat/all_private_rooms', authenticated, userAuthenticated, chatController.getPrivateLastMsgAndTime)
 
 module.exports = router

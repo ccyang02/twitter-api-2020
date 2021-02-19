@@ -33,6 +33,29 @@ const chatController = {
     } catch (error) {
       next(error)
     }
+  },
+  getPrivateLastMsgAndTime: async (req, res, next) => {
+    try {
+      const lastMessage = await sequelize.query(`
+        SELECT m1.ChannelId AS channelId, m1.message AS lastMsg, 
+               UNIX_TIMESTAMP(m1.createdAt) * 1000 AS lastMsgTime, 
+               users.id AS userId, users.name, users.account, users.avatar 
+        FROM (
+          SELECT ChannelId, MAX(id) AS id
+          FROM messages
+          WHERE ChannelId NOT IN (0)
+          group by ChannelId
+        ) AS m2
+        LEFT JOIN Messages AS m1
+        ON m1.id = m2.id
+        LEFT JOIN users
+        ON m1.UserId = users.id;
+      `, { type: Sequelize.QueryTypes.SELECT })
+
+      return res.json(lastMessage)
+    } catch (error) {
+      next(error)
+    }
   }
 }
 
