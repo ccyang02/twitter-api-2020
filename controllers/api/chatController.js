@@ -1,5 +1,7 @@
 const { User, Message, Read, Sequelize, sequelize } = require('../../models')
 const { Op } = Sequelize
+const helpers = require('../../_helpers.js')
+
 
 const chatController = {
   getMessages: async (req, res, next) => {
@@ -36,21 +38,49 @@ const chatController = {
   },
   getPrivateLastMsgAndTime: async (req, res, next) => {
     try {
-      const lastMessage = await sequelize.query(`
-        SELECT m1.ChannelId AS channelId, m1.message AS lastMsg, 
-               UNIX_TIMESTAMP(m1.createdAt) * 1000 AS lastMsgTime, 
-               users.id AS userId, users.name, users.account, users.avatar 
+      const userId = helpers.getUser(req).id
+      const channelList = await sequelize.query(`
+        SELECT Channels.id
+        FROM Channels
+        WHERE Channels.UserOne = :uid OR Channels.UserTwo = :uid;
+      `, { type: sequelize.QueryTypes.SELECT, replacements: { uid: userId } })
+      const channelIds = channelList.map(element => element.id)
+
+      let lastMessage = await sequelize.query(`
+        SELECT m1.ChannelId AS channelId, m1.UserId AS chattedUserId, m1.message AS lastMsg, 
+            UNIX_TIMESTAMP(m1.createdAt) * 1000 AS lastMsgTime, 
+            userone.id AS userOneId, userone.name AS userOneName, userone.account AS userOneAccount, userone.avatar AS userOneAvatar,
+            usertwo.id AS userTwoId, usertwo.name AS userTwoName, usertwo.account AS userTwoAccount, usertwo.avatar AS userTwoAvatar
         FROM (
           SELECT ChannelId, MAX(id) AS id
-          FROM messages
-          WHERE ChannelId NOT IN (0)
+          FROM Messages
+          WHERE ChannelId IN (:channelIds)
           group by ChannelId
         ) AS m2
         LEFT JOIN Messages AS m1
         ON m1.id = m2.id
-        LEFT JOIN users
-        ON m1.UserId = users.id;
-      `, { type: Sequelize.QueryTypes.SELECT })
+        LEFT JOIN Channels
+        ON Channels.id = m2.ChannelId
+        LEFT JOIN Users AS userone
+        ON Channels.UserOne = userone.id
+        LEFT JOIN Users AS usertwo
+        ON Channels.UserTwo = usertwo.id;
+      `, { type: Sequelize.QueryTypes.SELECT, replacements: { channelIds: channelIds } })
+
+      // get the other user
+      lastMessage = lastMessage.map(message => {
+        const userPrefix = message.userOneId !== userId ? 'userOne' : 'userTwo'
+        return {
+          channelId: message.channelId, chattedUserId: message.chattedUserId,
+          lastMsg: message.lastMsg, lastMsgTime: message.lastMsgTime,
+          chatTo: {
+            userId: message[userPrefix + 'Id'],
+            name: message[userPrefix + 'Name'],
+            account: message[userPrefix + 'Account'],
+            avatar: message[userPrefix + 'Avatar']
+          }
+        }
+      })
 
       return res.json(lastMessage)
     } catch (error) {
