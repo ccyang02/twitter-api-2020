@@ -81,7 +81,7 @@ module.exports = async (io) => {
       })
 
       socket.on('private-message', async (packet) => {
-        const { message, time, channelId, chatToUserId: receiverId } = packet
+        const { message, time, channelId, receiverId, receiverName } = packet
         const { account, avatar, id: senderId, name } = socket.user
         try {
           //save to database
@@ -95,6 +95,7 @@ module.exports = async (io) => {
           if (channelId === -1 && !channelIdFound) {
             const channel = await Channel.create({ UserTwo: senderId, UserOne: receiverId })
             channelIdFound = channel.id
+            await socket.emit('private-update-channelId', { userId: receiverId, name: receiverName, channelId: channelIdFound })
           }
           const msg = await Message.create({
             ChannelId: channelIdFound, UserId: senderId, message: String(message)
@@ -115,6 +116,7 @@ module.exports = async (io) => {
           console.log('Error on private-message: ', error)
         }
       })
+
       socket.on('disconnect', () => {
         console.log(`Get disconnected socket. (socketId: ${socket.id} account: ${account})`)
         onlineUsers[id].splice(onlineUsers[id].find(_socket => _socket.id === socket.id).id, 1)
