@@ -81,22 +81,23 @@ module.exports = async (io) => {
       })
 
       socket.on('private-message', async (packet) => {
-        const { message, time, channelId, sentToUserId } = packet
-        const { account, avatar, id, name } = socket.user
+        const { message, time, channelId, chatToUserId: receiverId } = packet
+        const { account, avatar, id: senderId, name } = socket.user
         try {
           //save to database
-          let channelIdFound = await sequelize.query(`
+          const channelIdFound = await sequelize.query(`
           SELECT id FROM Channels
-          WHERE (UserOne = id AND UserTwo = :sentToUserId) OR
-                (UserTwo = id AND UserOne = :sentToUserId) OR
+          WHERE (UserOne = :senderId AND UserTwo = :receiverId) OR
+                (UserTwo = :senderId AND UserOne = :receiverId) OR
                 id = :channelId
-        `, { type: sequelize.QueryTypes.SELECT, replacements: { channelId, sentToUserId} })
+        `, { type: sequelize.QueryTypes.SELECT, replacements: { channelId, receiverId, senderId} })
           if (channelId !== -1 && !channelIdFound) return res.status(400).message('channelId not found')
           if (channelId === -1 && !channelIdFound) {
-            const channel = await Channel.create({ UserTwo: id, UserOne: sentToUserId })
+            const channel = await Channel.create({ UserTwo: senderId, UserOne: receiverId })
+            channelIdFound = channel.id
           }
           const msg = await Message.create({
-            ChannelId: channelIdFound || channel.id, UserId: id, message: String(message)
+            ChannelId: channelIdFound, UserId: senderId, message: String(message)
           })
           msg.changed('createdAt', true)
           msg.set('createdAt', new Date(parseInt(time)), { raw: true })
