@@ -1,7 +1,6 @@
 const passport = require('./config/passport')
 const { Message, Read, Channel, sequelize } = require('./models')
 const { getConnectedUsers } = require('./controllers/socket/public.js')
-const channel = require('./models/channel')
 const onlineUsers = {}
 
 function authenticated(socket, next) {
@@ -119,7 +118,11 @@ module.exports = async (io) => {
 
       socket.on('disconnect', () => {
         console.log(`Get disconnected socket. (socketId: ${socket.id} account: ${account})`)
-        onlineUsers[id].splice(onlineUsers[id].find(_socket => _socket.id === socket.id).id, 1)
+        onlineUsers[id].find((_socket, index) => {
+          if (_socket.id !== socket.id) return false
+          onlineUsers[id].splice(index, 1)
+          return true
+        })       
         if (!onlineUsers[id].length) {
           delete onlineUsers[id]
           getConnectedUsers(io, onlineUsers)
