@@ -88,6 +88,9 @@ const userController = {
 
   getUsers: async (req, res, next) => {
     try {
+      const limitOption = (accumulatedNum) => {
+        return accumulatedNum.toLowerCase() === 'all' ? {} : { limit: Number(req.query.accumulatedNum) || 10 }
+      }
       const users = await User.findAll({
         where: {
           id: { [Op.ne]: helpers.getUser(req).id },
@@ -101,7 +104,7 @@ const userController = {
         },
         order: [[sequelize.literal('FollowersCount'), 'DESC']],
         offset: Number(req.query.startIndex) || 0,
-        limit: Number(req.query.accumulatedNum) || 10
+        ...limitOption(req.query.accumulatedNum)
       })
 
       const taggedUsers = users.map(user => tagIsFollowed(req, user.toJSON()))
