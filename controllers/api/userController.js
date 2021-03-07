@@ -89,7 +89,7 @@ const userController = {
   getUsers: async (req, res, next) => {
     try {
       const limitOption = (accumulatedNum) => {
-        return accumulatedNum.toLowerCase() === 'all' ? {} : { limit: Number(req.query.accumulatedNum) || 10 }
+        return accumulatedNum && accumulatedNum.toLowerCase() === 'all' ? {} : { limit: parseInt(req.query.accumulatedNum) || 10 }
       }
       const users = await User.findAll({
         where: {
