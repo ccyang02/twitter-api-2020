@@ -12,7 +12,7 @@ async function getConnectedUsers(io, onlineUsers) {
     })
 
     connectedUsers.forEach((user, i) => {
-      user.sckId = onlineUsers[user.id]
+      user.sckId = onlineUsers[user.id].id
     })
 
     await io.emit('init-public', connectedUsers)
