@@ -39,7 +39,7 @@ module.exports = async (io) => {
           avatar: socket.user.avatar
         })
       }
-      onlineUsers[id].push(socket.id)
+      onlineUsers[id].push(socket)
 
       socket.on('test-message', (username) => {
         console.log(`>>>>>>>> This is username from frontend. ${username}`)
@@ -93,7 +93,7 @@ module.exports = async (io) => {
         `, { type: sequelize.QueryTypes.SELECT, replacements: { channelId, sentToUserId} })
           if (channelId !== -1 && !channelIdFound) return res.status(400).message('channelId not found')
           if (channelId === -1 && !channelIdFound) {
-            const channel = await Channel.create({ UserTwo = id, UserOne = sentToUserId })
+            const channel = await Channel.create({ UserTwo: id, UserOne: sentToUserId })
           }
           const msg = await Message.create({
             ChannelId: channelIdFound || channel.id, UserId: id, message: String(message)
@@ -112,7 +112,7 @@ module.exports = async (io) => {
       })
       socket.on('disconnect', () => {
         console.log(`Get disconnected socket. (socketId: ${socket.id} account: ${account})`)
-        onlineUsers[id].splice(onlineUsers[id].indexOf(socket.id), 1)
+        onlineUsers[id].splice(onlineUsers[id].find(_socket => _socket.id === socket.id).id, 1)
         if (!onlineUsers[id].length) {
           delete onlineUsers[id]
           getConnectedUsers(io, onlineUsers)
