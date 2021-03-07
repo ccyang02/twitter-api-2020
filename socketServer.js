@@ -1,6 +1,7 @@
 const passport = require('./config/passport')
-const { Message, Read } = require('./models')
+const { Message, Read, Channel, sequelize } = require('./models')
 const { getConnectedUsers } = require('./controllers/socket/public.js')
+const channel = require('./models/channel')
 const onlineUsers = {}
 
 function authenticated(socket, next) {
@@ -79,6 +80,36 @@ module.exports = async (io) => {
         io.emit('public-message', { account, avatar, userId: id, name, message, time })
       })
 
+      socket.on('private-message', async (packet) => {
+        const { message, time, channelId, sentToUserId } = packet
+        const { account, avatar, id, name } = socket.user
+        try {
+          //save to database
+          let channelIdFound = await sequelize.query(`
+          SELECT id FROM Channels
+          WHERE (UserOne = id AND UserTwo = :sentToUserId) OR
+                (UserTwo = id AND UserOne = :sentToUserId) OR
+                id = :channelId
+        `, { type: sequelize.QueryTypes.SELECT, replacements: { channelId, sentToUserId} })
+          if (channelId !== -1 && !channelIdFound) return res.status(400).message('channelId not found')
+          if (channelId === -1 && !channelIdFound) {
+            const channel = await Channel.create({ UserTwo = id, UserOne = sentToUserId })
+          }
+          const msg = await Message.create({
+            ChannelId: channelIdFound || channel.id, UserId: id, message: String(message)
+          })
+          msg.changed('createdAt', true)
+          msg.set('createdAt', new Date(parseInt(time)), { raw: true })
+          await msg.save({ silent: true })
+
+          //open room and broadcast message
+          
+
+        } catch (error) {
+          console.log('Error on private-message: ', error)
+        }
+        
+      })
       socket.on('disconnect', () => {
         console.log(`Get disconnected socket. (socketId: ${socket.id} account: ${account})`)
         onlineUsers[id].splice(onlineUsers[id].indexOf(socket.id), 1)
