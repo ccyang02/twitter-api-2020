@@ -22,7 +22,7 @@ module.exports = {
         email: `user${i + 1}@example.com`,
         password: bcrypt.hashSync('12345678', bcrypt.genSaltSync(10)),
         cover: 'https://loremflickr.com/598/200/landscape/?lock=' + Math.floor(Math.random() * 100),
-        avatar: 'https://loremflickr.com/140/140/people/?lock=' + Math.floor(Math.random() * 100),
+        avatar: 'https://i.pravatar.cc/140?img=' + i,
         introduction: faker.lorem.text(),
         createdAt: new Date(2020, 1, 1),
         updatedAt: new Date(2020, 1, 1)
