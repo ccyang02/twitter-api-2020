@@ -104,12 +104,16 @@ module.exports = async (io) => {
           await msg.save({ silent: true })
 
           //open room and broadcast message
-          
-
+          onlineUsers[senderId].forEach(socket => socket.join(`room ${channelIdFound}`))
+          try {
+            onlineUsers[Number(receiverId)].forEach(socket => socket.join(`room ${channelIdFound}`))
+          } catch (error) {
+            console.log('Private message is sent but that user is not online.')
+          }
+          io.to(`room ${channelIdFound}`).emit('private-message', { account, avatar, userId: senderId, name, message: String(message), time: parseInt(time), channelId: channelIdFound})
         } catch (error) {
           console.log('Error on private-message: ', error)
         }
-        
       })
       socket.on('disconnect', () => {
         console.log(`Get disconnected socket. (socketId: ${socket.id} account: ${account})`)
