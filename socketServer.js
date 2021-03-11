@@ -1,5 +1,5 @@
 const passport = require('./config/passport')
-const { Message, Read, Channel, sequelize } = require('./models')
+const { Message, Read, Channel, User, sequelize } = require('./models')
 const { getConnectedUsers } = require('./controllers/socket/public.js')
 const onlineUsers = {}
 
@@ -82,25 +82,37 @@ module.exports = async (io) => {
       socket.on('private-message', async (packet) => {
         const { message, time, channelId, receiverId, receiverName } = packet
         const { account, avatar, id: senderId, name } = socket.user
+        let channelIdFound
         console.log(`>>>>> get private-message from ${name} (${senderId}): `, packet)
         try {
           //save to database 
-          if (!parseInt(receiverId) || !parseInt(channelId)) return res.status(400).message('Invalid channelId or receiverId')
-          let channelIdFound = await sequelize.query(`
-            SELECT id FROM Channels
-            WHERE (UserOne = :senderId AND UserTwo = :receiverId) OR
-                  (UserTwo = :senderId AND UserOne = :receiverId) OR
-                  id = :channelId
-          `, { type: sequelize.QueryTypes.SELECT, replacements: { channelId, receiverId, senderId} })
-          channelIdFound = channelIdFound[0]
-          if (channelId !== -1 && !channelIdFound) return res.status(400).message('channelId not found')
-          if (channelId === -1 && !channelIdFound) {
-            const idExist = await User.findByPk(receiverId)
-            if (!idExist) return res.status(400).json({ status: 'error', message: 'User not found.' })
-            const channel = await Channel.create({ UserTwo: senderId, UserOne: receiverId })
-            channelIdFound = channel.id
+          if ((receiverId && !parseInt(receiverId)) || !parseInt(channelId)) throw new Error('Invalid channelId or receiverId')
+
+          //check and create new channel
+          if (channelId !== -1) {
+            const channelFound = await Channel.findByPk(channelId)
+            if (!channelFound) throw new Error('channelId not found')
+            channelIdFound = channelId
+          } else if (receiverId) {
+            const result = await sequelize.query(`
+              SELECT id FROM Channels
+              WHERE (UserOne = :senderId AND UserTwo = :receiverId) OR
+                    (UserTwo = :senderId AND UserOne = :receiverId)
+            `, { type: sequelize.QueryTypes.SELECT, replacements: { channelId, receiverId, senderId } })
+            if (result.length) {
+              channelIdFound = result[0].id
+            } else {
+              const userIdExist = await User.findByPk(receiverId)
+              if (!userIdExist) throw new Error('User not found.')
+              const channel = await Channel.create({ UserTwo: senderId, UserOne: receiverId })
+              channelIdFound = channel.id
+            }
             await socket.emit('private-update-channelId', { userId: receiverId, name: receiverName, channelId: channelIdFound })
+          } else {
+            throw new Error('ReceiverId is missing.')
           }
+          
+          //save message to db
           const msg = await Message.create({
             ChannelId: channelIdFound, UserId: senderId, message: String(message)
           })
@@ -108,14 +120,21 @@ module.exports = async (io) => {
           msg.set('createdAt', new Date(parseInt(time)), { raw: true })
           await msg.save({ silent: true })
 
-          //open room and broadcast message
+          //open room 
           onlineUsers[senderId].forEach(socket => socket.join(`room ${channelIdFound}`))
-          onlineUsers[Number(receiverId)].forEach(socket => socket.join(`room ${channelIdFound}`))
-          console.log(`>>>>> broadcast private-message to room ${channelIdFound}: `, { account, avatar, userId: senderId, name, message: String(message), time: parseInt(time), channelId: channelIdFound })
-          io.to(`room ${channelIdFound}`).emit('private-message', { account, avatar, userId: senderId, name, message: String(message), time: parseInt(time), channelId: channelIdFound})
+          try {
+            onlineUsers[Number(receiverId)].forEach(socket => socket.join(`room ${channelIdFound}`))
+          } catch (error) {
+            console.log('Private message is sent but that user is not online.')
+          }
+
+          //broadcast message
+          const responsePacket = { account, avatar, userId: senderId, name, message: String(message), time: parseInt(time), channelId: channelIdFound }
+          console.log(`>>>>> broadcast private-message to room ${channelIdFound}: `, responsePacket)
+          io.to(`room ${channelIdFound}`).emit('private-message', responsePacket)
         } catch (error) {
-          next(error)
           console.log('Error on private-message: ', error)
+          socket.emit('error', 'Internal error occurs, please try again later.')
         }
       })
 
