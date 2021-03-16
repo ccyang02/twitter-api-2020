@@ -46,6 +46,9 @@ const chatController = {
       `, { type: sequelize.QueryTypes.SELECT, replacements: { uid: userId } })
       const channelIds = channelList.map(element => element.id)
 
+      // for a brand new user who did not have any private rooms
+      if (channelList.length == 0) return res.json([])
+
       let lastMessage = await sequelize.query(`
         SELECT m1.ChannelId AS channelId, m1.UserId AS chattedUserId, m1.message AS lastMsg, 
             UNIX_TIMESTAMP(m1.createdAt) * 1000 AS lastMsgTime, 
