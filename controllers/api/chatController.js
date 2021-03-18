@@ -89,7 +89,37 @@ const chatController = {
     } catch (error) {
       next(error)
     }
+  },
+  getPrivateUnread: async (req, res, next) => {
+    try {
+      const userId = helpers.getUser(req).id
+      const channelList = await sequelize.query(`
+        SELECT Channels.id
+        FROM Channels
+        WHERE Channels.UserOne = :uid OR Channels.UserTwo = :uid;
+      `, { type: sequelize.QueryTypes.SELECT, replacements: { uid: userId } })
+      const channelIds = channelList.map(element => element.id)
+      if (channelList.length == 0) return res.json([])
+
+      const unreadCount = await sequelize.query(`
+        SELECT Messages.ChannelId, COUNT(Messages.ChannelId) AS counter
+        FROM Messages
+        LEFT JOIN Reads
+        ON Messages.ChannelId = Reads.ChannelId AND Reads.UserId = :userId
+        WHERE Messages.ChannelId IN (:channelIds) AND createdAt > Reads.date
+        GROUP BY Messages.ChannelId;
+      `, { type: Sequelize.QueryTypes.SELECT, replacements: { channelIds: channelIds, userId: userId } })
+
+      const unreadCountObj = {}
+      unreadCount.forEach(element => unreadCountObj[element.ChannelId] = element.counter);
+
+      console.log(unreadCountObj)
+      return res.json(unreadCountObj)
+    } catch (error) {
+      next(error)
+    }
   }
+
 }
 
 module.exports = chatController
