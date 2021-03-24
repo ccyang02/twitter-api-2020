@@ -81,7 +81,8 @@ const chatController = {
             name: message[userPrefix + 'Name'],
             account: message[userPrefix + 'Account'],
             avatar: message[userPrefix + 'Avatar']
-          }
+          },
+          chatToUserIsOnline: false
         }
       })
 
@@ -101,14 +102,18 @@ const chatController = {
       const channelIds = channelList.map(element => element.id)
       if (channelList.length == 0) return res.json([])
 
-      const unreadCount = await sequelize.query(`
-        SELECT Messages.ChannelId, COUNT(Messages.ChannelId) AS counter
-        FROM Messages
-        LEFT JOIN Reads
-        ON Messages.ChannelId = Reads.ChannelId AND Reads.UserId = :userId
-        WHERE Messages.ChannelId IN (:channelIds) AND createdAt > Reads.date
-        GROUP BY Messages.ChannelId;
-      `, { type: Sequelize.QueryTypes.SELECT, replacements: { channelIds: channelIds, userId: userId } })
+      const unreadCount = await sequelize.query(
+        'SELECT Messages.ChannelId, COUNT(Messages.ChannelId) AS counter ' +
+        'FROM Messages ' +
+        'LEFT JOIN `Reads` AS dbr ' +
+        'ON Messages.ChannelId = dbr.ChannelId AND dbr.UserId = :userId ' +
+        'WHERE Messages.ChannelId IN (:channelIds) AND createdAt > dbr.date ' +
+        'GROUP BY Messages.ChannelId; '
+        , {
+          type: Sequelize.QueryTypes.SELECT,
+          replacements: { channelIds: channelIds, userId: userId }
+        }
+      )
 
       const unreadCountObj = {}
       unreadCount.forEach(element => unreadCountObj[element.ChannelId] = element.counter);
