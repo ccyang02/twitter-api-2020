@@ -103,11 +103,11 @@ const chatController = {
       if (channelList.length == 0) return res.json([])
 
       const unreadCount = await sequelize.query(
-        'SELECT Messages.ChannelId, COUNT(Messages.ChannelId) AS counter ' +
+        'SELECT Messages.ChannelId, COUNT(DISTINCT Messages.id) AS counter ' +
         'FROM Messages ' +
         'LEFT JOIN `Reads` AS dbr ' +
         'ON Messages.ChannelId = dbr.ChannelId AND dbr.UserId = :userId ' +
-        'WHERE Messages.ChannelId IN (:channelIds) AND createdAt > dbr.date ' +
+        'WHERE Messages.ChannelId IN (:channelIds) AND createdAt > dbr.date AND Messages.UserId <> :userId ' +
         'GROUP BY Messages.ChannelId; '
         , {
           type: Sequelize.QueryTypes.SELECT,
