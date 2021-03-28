@@ -1,6 +1,8 @@
 const passport = require('./config/passport')
-const { Message, Read, Channel, User, sequelize } = require('./models')
+const { Message, Read, Channel, User, sequelize, Sequelize } = require('./models')
+const { Op } = Sequelize
 const { getConnectedUsers } = require('./controllers/socket/public.js')
+const db = require('./models')
 const onlineUsers = {}
 
 function authenticated(socket, next) {
@@ -53,10 +55,24 @@ module.exports = async (io) => {
         const { channelId, time } = packet
         const { id } = socket.user
 
-        const output = await Read.update({ 'date': new Date(parseInt(time)) }, { where: { 'UserId': id, 'ChannelId': channelId } })
-        if (output[0] === 0) {
-          // if there is no record about this user
-          await Read.create({ 'UserId': id, 'ChannelId': channelId, 'date': new Date(parseInt(time)) })
+        try {
+          if (channelId === -1) return
+          const channelIsValid = await Channel.findOne({ where: { 
+            id: channelId, 
+            [Op.or]: [{ UserOne: id}, {UserTwo: id}]  
+          }})
+          if (!channelIsValid) throw new Error(`User is not in the channel`)
+          
+          const readFound = await Read.findOne({ where: { 'UserId': id, 'ChannelId': channelId } })
+          if (!readFound) {
+            // if there is no record about this user
+            await Read.create({ 'UserId': id, 'ChannelId': channelId, 'date': new Date(parseInt(time)) })
+          } else {
+            await Read.update({ 'date': new Date(parseInt(time)) }, { where: { 'UserId': id, 'ChannelId': channelId } })
+          }
+        } catch(error) {
+          console.log('Error on message-read-timestamp: ', error)
+          socket.emit('error', 'Internal error occurs, please try again later.')
         }
       })
 
