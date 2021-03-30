@@ -70,7 +70,7 @@ module.exports = async (io) => {
           } else {
             await Read.update({ 'date': new Date(parseInt(time)) }, { where: { 'UserId': id, 'ChannelId': channelId } })
           }
-          socket.emit('message-read-timestamp', channelId)
+          socket.emit('message-read-timestamp', { channelId })
         } catch(error) {
           console.log('Error on message-read-timestamp: ', error)
           socket.emit('error', 'Internal error occurs, please try again later.')
