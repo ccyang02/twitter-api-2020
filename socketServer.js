@@ -57,14 +57,16 @@ module.exports = async (io) => {
 
         try {
           if (channelId === -1) return
-          const channelIsValid = await Channel.findOne({
-            where: {
-              id: channelId,
-              [Op.or]: [{ UserOne: id }, { UserTwo: id }]
-            }
-          })
-          if (!channelIsValid) throw new Error(`User is not in the channel`)
-
+          if (channelId !== 0) {
+            const channelIsValid = await Channel.findOne({
+              where: {
+                id: channelId,
+                [Op.or]: [{ UserOne: id }, { UserTwo: id }]
+              }
+            })
+            if (!channelIsValid) throw new Error(`User is not in the channel`)
+          }
+          
           const readFound = await Read.findOne({ where: { 'UserId': id, 'ChannelId': channelId } })
           if (!readFound) {
             // if there is no record about this user
