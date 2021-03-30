@@ -57,12 +57,14 @@ module.exports = async (io) => {
 
         try {
           if (channelId === -1) return
-          const channelIsValid = await Channel.findOne({ where: { 
-            id: channelId, 
-            [Op.or]: [{ UserOne: id}, {UserTwo: id}]  
-          }})
+          const channelIsValid = await Channel.findOne({
+            where: {
+              id: channelId,
+              [Op.or]: [{ UserOne: id }, { UserTwo: id }]
+            }
+          })
           if (!channelIsValid) throw new Error(`User is not in the channel`)
-          
+
           const readFound = await Read.findOne({ where: { 'UserId': id, 'ChannelId': channelId } })
           if (!readFound) {
             // if there is no record about this user
@@ -71,7 +73,7 @@ module.exports = async (io) => {
             await Read.update({ 'date': new Date(parseInt(time)) }, { where: { 'UserId': id, 'ChannelId': channelId } })
           }
           socket.emit('message-read-timestamp', { channelId })
-        } catch(error) {
+        } catch (error) {
           console.log('Error on message-read-timestamp: ', error)
           socket.emit('error', 'Internal error occurs, please try again later.')
         }
@@ -124,11 +126,13 @@ module.exports = async (io) => {
               const channel = await Channel.create({ UserTwo: senderId, UserOne: receiverId })
               channelIdFound = channel.id
             }
+            // for user who receives new message, we need to add there unread data in the database
+            await Read.create({ 'UserId': receiverId, 'ChannelId': channelIdFound, 'date': new Date(0) })
             await socket.emit('private-update-channelId', { userId: receiverId, name: receiverName, channelId: channelIdFound })
           } else {
             throw new Error('ReceiverId is missing.')
           }
-          
+
           //save message to db
           const msg = await Message.create({
             ChannelId: channelIdFound, UserId: senderId, message: String(message)
@@ -161,7 +165,7 @@ module.exports = async (io) => {
           if (_socket.id !== socket.id) return false
           onlineUsers[id].splice(index, 1)
           return true
-        })       
+        })
         if (!onlineUsers[id].length) {
           delete onlineUsers[id]
           getConnectedUsers(io, onlineUsers)
